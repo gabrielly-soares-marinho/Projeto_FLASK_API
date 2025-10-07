@@ -8,19 +8,39 @@ def buscar_professor(id):
     return Professor.query.get(id)
 
 def criar_professor(data):
-    professor = Professor(**data)
-    db.session.add(professor)
-    db.session.commit()
-    return professor
+    try:
+        professor = Professor(**data)
+        db.session.add(professor)
+        db.session.commit()
+        return professor
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao criar professor: {e}")
+        return None
 
 def atualizar_professor(id, data):
     professor = Professor.query.get(id)
+    if not professor:
+        return None
     for key, value in data.items():
         setattr(professor, key, value)
-    db.session.commit()
-    return professor
+    try:
+        db.session.commit()
+        return professor
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao atualizar professor: {e}")
+        return None
 
 def deletar_professor(id):
     professor = Professor.query.get(id)
-    db.session.delete(professor)
-    db.session.commit()
+    if professor:
+        try:
+            db.session.delete(professor)
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            print(f"Erro ao deletar professor: {e}")
+            return False
+    return False
